@@ -1,9 +1,11 @@
 import { createApp, watch, ref, computed } from "vue";
 
-const $post = async (url, data) => {
+const $Post = async (url, data) => {
     try {
         let result = await fetch(
-            `https://skys_forms${url.startsWith("/") ? url : `/${url}`}`,
+            `https://${GetParentResourceName()}${
+                url.startsWith("/") ? url : `/${url}`
+            }`,
             {
                 method: "POST",
                 headers: {
@@ -16,7 +18,7 @@ const $post = async (url, data) => {
         return await result.json();
     } catch (error) {
         console.error("Error in POST request:", error);
-        return { success: false, message: "Error en la solicitud" };
+        return { success: false, message: "Request failed" };
     }
 };
 
@@ -29,7 +31,7 @@ createApp({
         const showApp = ref(false); // this will toggle visibility
 
         const closeApplication = () => {
-            $post(`https://${GetParentResourceName()}/closeApp`, {
+            $Post(`/closeApp`, {
                 inputValue: inputValue.value,
             });
             showApp.value = false;
@@ -74,8 +76,6 @@ createApp({
                 this.showApp = true;
             }
         });
-
-        this.showApp = true;
     },
     beforeUnmount() {
         // This is where you will remove your event listeners
