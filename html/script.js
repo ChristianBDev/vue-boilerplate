@@ -1,46 +1,74 @@
-const boilerApp = Vue.createApp({
-    data() {
-        // This is where you define your variables used in the HTML
-        return {
-            inputValue: "", // this will be bound to the input
-            showApp: false, // this will toggle visibility
-        };
-    },
-    computed: {
-        // This is where you define fuctions that don't need parameters
-        // https://vuejs.org/guide/essentials/computed.html
-        computedValue() {
-            // Compute and return a value based on the input value
-            return this.inputValue.toUpperCase();
-        },
-    },
-    watch: {
-        // This is where you can watch for state changes and act on them
-        // Think like AddEventHandler in lua except we're listening using v-model
-        // https://vuejs.org/guide/essentials/watch.html
-        inputValue(newValue, oldValue) {
-            console.log(`Input Value Changed: ${oldValue} -> ${newValue}`);
-        },
-    },
-    methods: {
-        // This is where your traditional JS functions go
-        // https://vuejs.org/guide/essentials/methods.html
-        handleKeydown(event) {
-            if (event.key === "Escape") {
-                this.closeApplication();
+import { createApp, watch, ref, computed } from "vue";
+
+const $Post = async (url, data) => {
+    try {
+        let result = await fetch(
+            `https://${GetParentResourceName()}${
+                url.startsWith("/") ? url : `/${url}`
+            }`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
             }
-        },
-        closeApplication() {
-            // if you'd rather not use axios, you can use fetch as shown below
-            // fetch(`https://${GetParentResourceName()}/closeApp`, { method: "POST", headers: { "Content-Type": "application/json; charset=UTF-8" }, body: JSON.stringify({ inputValue: this.inputValue }) });
-            axios.post(`https://${GetParentResourceName()}/closeApp`, { inputValue: this.inputValue });
-            this.showApp = false;
-            this.inputValue = "";
-        },
+        );
+
+        return await result.json();
+    } catch (error) {
+        console.error("Error in POST request:", error);
+        return { success: false, message: "Request failed" };
+    }
+};
+
+createApp({
+    setup() {
+        // This is where you define your variables and functions used in the HTML
+        // https://vuejs.org/api/reactivity-core.html#ref
+
+        const inputValue = ref(""); // this will be bound to the input
+        const showApp = ref(false); // this will toggle visibility
+
+        const closeApplication = () => {
+            $Post(`/closeApp`, {
+                inputValue: inputValue.value,
+            });
+            showApp.value = false;
+            inputValue.value = "";
+        };
+
+        const handleKeydown = (event) => {
+            if (event.key === "Escape") {
+                closeApplication();
+            }
+        };
+
+        // This function is used to watch for state changes and act on them
+        // Think like AddEventHandler in lua except we're listening using v-model
+        // https://vuejs.org/guide/essentials/watchers.html#deep-watchers
+        watch(inputValue, (newValue, oldValue) => {
+            console.log(`Input Value Changed: ${oldValue} -> ${newValue}`);
+        });
+
+        // This function is used to define computed properties
+        // https://vuejs.org/api/reactivity-core.html#computed
+        const computedValue = computed(() => {
+            // Compute and return a value based on the input value
+            return inputValue.value.toUpperCase();
+        });
+
+        return {
+            inputValue,
+            showApp,
+            handleKeydown,
+            closeApplication,
+            computedValue,
+        };
     },
     mounted() {
         // This is where you will add your event listeners
-        // https://vuejs.org/guide/instance.html#Lifecycle-Diagram
+        // https://vuejs.org/guide/essentials/lifecycle.html#lifecycle-diagram
         document.addEventListener("keydown", this.handleKeydown);
 
         window.addEventListener("message", (event) => {
@@ -51,7 +79,7 @@ const boilerApp = Vue.createApp({
     },
     beforeUnmount() {
         // This is where you will remove your event listeners
-        // https://vuejs.org/guide/instance.html#Lifecycle-Diagram
+        // https://vuejs.org/guide/essentials/lifecycle.html#lifecycle-diagram
         document.removeEventListener("keydown", this.handleKeydown);
     },
 }).mount("#app");
