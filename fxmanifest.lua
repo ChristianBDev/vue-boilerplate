@@ -1,14 +1,18 @@
 fx_version 'cerulean'
 game 'gta5'
-lua54 'yes'
 
-client_script 'client.lua'
-server_script 'server.lua'
+author 'QBCore Framework Developers'
+description 'Official QBCore Framework VueJS NUI Boilerplate'
+version '1.0.0'
 
-ui_page 'html/index.html'
+client_script 'client/client.lua'
+server_script 'server/server.lua'
+
+ui_page 'web/build/index.html'
 
 files {
-    'html/index.html',
-    'html/script.js',
-    'html/style.css',
+    'web/build/index.html',
+    'web/build/assets/*'
 }
+
+lua54 'yes'
